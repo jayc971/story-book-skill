@@ -47,6 +47,8 @@ the next status update, then close the issue.
 
 ## Installing the skill (your team)
 
+**Claude Code:**
+
 ```
 /plugin marketplace add <you>/story-book-skill
 /plugin install story-book
@@ -55,3 +57,8 @@ the next status update, then close the issue.
 No further setup — no token, no environment variable, nothing to
 configure. Typing `/story-book` (or just asking about the project) will
 trigger it.
+
+**claude.ai (chat, not Claude Code):** see [`claude-ai/README.md`](./claude-ai/README.md)
+— there's no plugin install on claude.ai, so this uses Project custom
+instructions and a plain GitHub link for feedback instead of the Cloudflare
+proxy.
