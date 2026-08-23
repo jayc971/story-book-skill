@@ -1,0 +1,10 @@
+{
+  "name": "story-book",
+  "displayName": "Story Book",
+  "version": "1.0.0",
+  "description": "Explains the current state of the Loop Storybook project in plain language for non-technical stakeholders.",
+  "author": {
+    "name": "Jayanika Chandrapriya",
+    "email": "jayanika.chandrapriya@looplogics.com"
+  }
+}
