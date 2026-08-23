@@ -1,46 +1,70 @@
 # Using story-book on claude.ai
 
-This is a claude.ai-native version of the `/story-book` skill. It doesn't
-rely on a plugin install (that's a Claude Code concept) or on the Cloudflare
-feedback proxy (that requires curl access this chat surface may not have,
-and unfamiliar-domain webhooks are the kind of thing a fresh Claude instance
-correctly hesitates to call). Instead it works entirely through fetching a
-public GitHub URL and, for feedback, handing the user a plain GitHub link to
-click.
+claude.ai doesn't have a plugin-install mechanism like Claude Code, and its
+"Skills" feature runs in a sandbox with **no general internet access** — a
+Skill can never fetch an external URL like `raw.githubusercontent.com`; it
+will always fail with "Failed to fetch" no matter how the SKILL.md is
+written. That single constraint is why there are two different options
+below, depending on what you care about more: the literal `/story-book`
+command, or always-live data.
 
-## Setup (one time, ~1 minute)
+## Option A — `/story-book` as an actual command (snapshot, not live)
+
+This is what most people mean when they say "install the skill." It uses
+claude.ai's Skills upload feature, with the status content **bundled inside
+the Skill** instead of fetched over the network (the officially supported
+pattern for Skills that need data, since the sandbox blocks fetching).
+
+**Setup:**
+
+1. Run `./scripts/package-claude-ai-skill.sh` from this repo — it copies the
+   current `status.md` into `claude-ai/skill/references/` and produces
+   `claude-ai/story-book-skill.zip`.
+2. On claude.ai: Settings → Capabilities/Skills → upload that zip.
+3. Type `/story-book` (or ask about the project) in any chat.
+
+**The tradeoff:** the content is a snapshot from whenever the zip was last
+uploaded — not live. To refresh it, re-run the script and re-upload the zip.
+This is the same kind of "re-run an update step" maintenance as Claude Code
+users running `/plugin install story-book@story-book-skill` again after a
+skill change — just manual instead of one command, since claude.ai has no
+plugin-update mechanism.
+
+Each teammate who wants `/story-book` needs to upload the zip to their own
+account — Skills aren't shared automatically (that needs Enterprise-admin
+provisioning). Share the zip file or the script + repo access.
+
+## Option B — Live data, no slash command
+
+If always-current data matters more than the `/story-book` command itself,
+use a claude.ai Project instead — it runs as normal chat, not the Skills
+sandbox, so it can actually fetch a live URL.
 
 1. Make sure **web search** is turned on for your account (Settings →
-   Capabilities). Without it, Claude has no way to reach an external URL at
-   all.
-2. On claude.ai, create a **Project** (any name — e.g. "Loop Storybook
-   status").
-3. Open the Project's **custom instructions** and paste in the full contents
-   of [`project-instructions.md`](./project-instructions.md).
-4. Save.
+   Capabilities) — without it Claude can't reach any external URL.
+2. Create a claude.ai **Project** (e.g. "Loop Storybook status").
+3. Paste the contents of [`project-instructions.md`](./project-instructions.md)
+   into the Project's custom instructions.
+4. Ask about the project's status in any chat inside that Project — no
+   `/story-book` command, just ask naturally.
 
-That's it. Every chat inside that Project now behaves like the skill: ask
-about the project's status and it fetches the live doc and explains it in
-plain language.
+Sharing this with a team: invite teammates to the Project (Team/Enterprise
+plans support this) and they get the same behavior with zero setup of their
+own, still no slash command.
 
-## Do NOT use the "Skills" upload feature for this
+## Feedback, either way
 
-claude.ai's Skills upload feature (Settings → Capabilities/Skills) runs each
-Skill inside a sandboxed code-execution environment with **no general
-internet access**. A Skill can never fetch an arbitrary URL like
-`raw.githubusercontent.com` — it will always fail with "Failed to fetch",
-regardless of how the SKILL.md is written. This is a hard platform
-limitation, not a bug in this repo.
+Both options ask "Want me to file this as feedback?" and, if yes, hand the
+user a pre-filled `github.com/jayc971/story-book-skill/issues/new?...` link
+to open themselves — never a curl call to an unfamiliar domain, since a
+fresh claude.ai session has no reason to trust that the way an installed
+Claude Code plugin implicitly does.
 
-The Project custom instructions route above works because it runs as normal
-chat (not the Skills sandbox) and can use claude.ai's regular web-browsing
-capability instead.
+## Comparison
 
-## Why this differs from the Claude Code version
-
-| | Claude Code (`skills/story-book/SKILL.md`) | claude.ai (this folder) |
-|---|---|---|
-| Install | `/plugin install story-book` | Paste into Project instructions |
-| Fetch status.md | WebFetch tool, always available | Needs "web search" enabled in claude.ai Settings; the Skills-upload feature specifically cannot fetch at all (sandboxed, no internet) |
-| Feedback | curl to a Cloudflare Worker proxy | Pre-filled `github.com/.../issues/new` link the user opens themselves |
-| Trust model | Installing implies trust; tool calls run silently | No install step, so unfamiliar domains/webhooks get (correctly) questioned — this version avoids that by never asking Claude to call anything but github.com |
+| | Claude Code (`skills/story-book/SKILL.md`) | claude.ai Option A (Skill, bundled) | claude.ai Option B (Project) |
+|---|---|---|---|
+| Trigger | `/story-book` | `/story-book` | Ask naturally, no command |
+| Data freshness | Live (fetched every time) | Snapshot as of last zip upload | Live (fetched every time) |
+| Per-teammate setup | `/plugin install` once | Upload the zip once | None, if added to the shared Project |
+| Refreshing content | Automatic (fetches live) | Re-run script, re-upload zip | Automatic (fetches live) |
