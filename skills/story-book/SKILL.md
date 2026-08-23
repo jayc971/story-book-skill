@@ -1,4 +1,5 @@
 ---
+name: story-book
 description: Explains the current state of the Loop Storybook project — recent changes and file structure — in plain language for non-technical stakeholders.
 ---
 
