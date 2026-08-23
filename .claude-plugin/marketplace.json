@@ -3,7 +3,7 @@
   "plugins": [
     {
       "name": "story-book",
-      "repository": "github.com/<your-github-username>/story-book-skill",
+      "repository": "github.com/jayc971/story-book-skill",
       "ref": "main",
       "path": ".",
       "description": "Plain-language status updates on the Loop Storybook project, for non-technical stakeholders.",
